@@ -15,11 +15,15 @@ function TextInputPage() {
     }
   }
 
-  // api call 
+  // api call
+  // await fxn() get the bot
+  // create message
+  // send message
+  // wait for response and check for run status
+  // display results
 
   return (
     <div>
-      <h1>Text Input Example</h1>
       <input
         type="text"
         value={text}
