@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
 
+import axios from 'axios';
+
+
 function TextInputPage() {
   const [text, setText] = useState('');
 
@@ -7,20 +10,14 @@ function TextInputPage() {
     setText(event.target.value);
   };
 
-  const handleEnter = (event) => {
-    if (event.key === 'Enter')
-    {
-      //api call
-      console.log("PREASEDFS");
-    }
+  const handleEnter = async () => {
+    //api call
+    console.log("PREASEDFS");
+    const response = await axios.post('/api/chat', {
+      userInput: text
+    });
   }
 
-  // api call
-  // await fxn() get the bot
-  // create message
-  // send message
-  // wait for response and check for run status
-  // display results
 
   return (
     <div>
