@@ -6,7 +6,7 @@ import TextInputPage from '@/components/Input';
 function App() {
   return (
     <div className="App">
-      <TextInputPage />
+      <TextInputPage/>
     </div>
   );
 }

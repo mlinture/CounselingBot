@@ -19,11 +19,8 @@ function TextInputPage() {
   }
 
 
-  
-
   return (
     <div>
-      <h1>Text Input Example</h1>
       <input
         type="text"
         value={text}
