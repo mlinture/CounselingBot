@@ -1,5 +1,7 @@
 // pages/api/getAssistant.js
 import OpenAI, { APIConnectionError } from 'openai';
+import fs from 'fs';
+import path from 'path';
 import axios from 'axios';
 const OPENAI_API_KEY = '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';
 
@@ -9,12 +11,39 @@ const openai = new OpenAI({
 let assistant;
 let thread;
 
-async function setEnv() {
+const downloadFile = async (url, filepath) => {
+  const writer = fs.createWriteStream(filepath);
+  const response = await axios({
+    url,
+    method: 'GET',
+    responseType: 'stream',
+  });
+
+  response.data.pipe(writer);
+
+  return new Promise((resolve, reject) => {
+    writer.on('finish', resolve);
+    writer.on('error', reject);
+  });
+};
+
+async function setEnv(schoolLink) {
+  const temp = path.join(__dirname, 'temp.pdf');
+  await downloadFile(schoolLink, temp);
+
+  const file = await openai.files.create({
+    file: fs.createReadStream(temp),
+    purpose: "assistants",
+  });
+
+  fs.unlinkSync(temp);
+
   assistant = await openai.beta.assistants.create({
     name: "Counseling Bot",
     instructions:
     "You are a college counselor who helps students schedule classes and gives specialized advice for prosperous future career development.",
     tools: [{ type: "code_interpreter" }],
+    file_ids: [file.id],
     model: "gpt-4-1106-preview",
   });
 
@@ -24,6 +53,7 @@ async function setEnv() {
 export default async function handler(req, res) {
 
   const { prompt } = req.body;
+  const { school } = req.body;
 
   if (!prompt) {
     res.status(400).json({ message: 'No prompt was provided. Please try again.'});
@@ -33,7 +63,7 @@ export default async function handler(req, res) {
   try {
 
     if (thread === undefined) {
-      thread = await setEnv();
+      thread = await setEnv(school);
     }
 
     await openai.beta.threads.messages.create(thread.id, {
@@ -52,15 +82,16 @@ export default async function handler(req, res) {
     
     let count = 0;
     while (status.status !== "completed") {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       console.log("STOPPP");
       status = await openai.beta.threads.runs.retrieve(
         thread.id,
         run.id,
       );
-      if (count == 5) {
-        break;
-      }
+      // count += 1;
+      // if (count == 5) {
+      //   break;
+      // }
     }
 
     const messages = await openai.beta.threads.messages.list(thread.id);
@@ -74,36 +105,3 @@ export default async function handler(req, res) {
   }
 
 } 
-
-
-// export default async function handler(req, res) {
-//   if (req.method !== 'POST') {
-//       res.status(405).json({ message: 'Only POST requests are allowed' });
-//       return;
-//   }
-
-//   const { prompt } = req.body;
-
-//   if (!prompt) {
-//       res.status(400).json({ message: 'No prompt provided' });
-//       return;
-//   }
-
-//   try {
-//         const response = await axios.post('https://api.openai.com/v1/completions', {
-//           model: "text-davinci-003",
-//           prompt: prompt,
-//           max_tokens: 150
-//       }, {
-//           headers: {
-//               'Authorization': `Bearer ${OPENAI_API_KEY}`,
-//               'Content-Type': 'application/json'
-//           }
-//       });
-//       console.log(response.data.choices[0].text.trim());
-//       res.status(200).json({ message: response.data.choices[0].text.trim() });
-//   } catch (error) {
-//       console.error('OpenAI API request failed:', error);
-//       res.status(500).json({ message: 'Error processing your request' });
-//   }
-// }

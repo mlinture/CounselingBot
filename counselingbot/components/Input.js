@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TextFormatter from './Textformat';
-
+import Dropdown from './Dropdown';
 
 
 function TextInputPage() {
@@ -9,6 +9,12 @@ function TextInputPage() {
   const areaRef = useRef(null);
   const [aiResponse, setAiResponse] = useState('');
   const [loading, setIsLoading] = useState(false);
+  const [selectedSchool, setSchool] = useState('');
+
+  const SCHOOLS = [
+    { name: 'UCI', url: 'https://catalogue.uci.edu/pdf/2022-23.pdf' },
+    { name: 'Purdue', url: 'https://catalog.purdue.edu/mime/media/16/11101/2023-2024+Courses.pdf'},
+  ];
 
   const handleInputChange = (event) => {
     setText(event.target.value);
@@ -23,12 +29,15 @@ function TextInputPage() {
     }
   }
 
+  const handleUrlSelect = (url) => {
+    setSchool(url);
+  }
+
   useEffect(() => {
     adjustHeight();
   }, [text]);
 
   const handleEnter = async () => {
-    //api call
     if (!text.trim()) {
       setAiResponse('Please enter a question.');
       return;
@@ -41,7 +50,10 @@ function TextInputPage() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ prompt: text }),
+            body: JSON.stringify({ 
+              prompt: text,
+              school: selectedSchool
+            }),
         });
 
         if (!response.ok) {
@@ -76,6 +88,10 @@ function TextInputPage() {
 
   return (
     <div>
+      <Dropdown 
+        schools={SCHOOLS}
+        onUrlSelect={handleUrlSelect}
+      />
       <textarea
         type="text"
         value={text}
@@ -84,7 +100,6 @@ function TextInputPage() {
         placeholder="Type something..."
         ref={areaRef}
       />
-      <p>You typed: {text}</p>
       <button
         type="button"
         onClick={handleEnter}
