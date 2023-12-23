@@ -12,7 +12,7 @@ function TextInputPage() {
   const [selectedSchool, setSchool] = useState('');
 
   const SCHOOLS = [
-    { name: 'UCI', url: 'https://catalogue.uci.edu/pdf/2022-23.pdf' },
+    { name: 'UCI', url: 'https://catalogue.uci.edu/previouseditions/2013-14/pdf/2013-14.pdf' },
     { name: 'Purdue', url: 'https://catalog.purdue.edu/mime/media/16/11101/2023-2024+Courses.pdf'},
   ];
 
@@ -20,6 +20,10 @@ function TextInputPage() {
     setText(event.target.value);
     adjustHeight();
   };
+
+  const clearText = () => {
+    setText('');
+  }
 
   const adjustHeight = () => {
     if (areaRef.current) {
@@ -68,6 +72,7 @@ function TextInputPage() {
         setAiResponse('Sorry, something went wrong.');
     } finally {
         setIsLoading(false);
+        clearText();
     }
   }
 

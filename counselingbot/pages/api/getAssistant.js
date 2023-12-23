@@ -42,9 +42,9 @@ async function setEnv(schoolLink) {
     name: "Counseling Bot",
     instructions:
     "You are a college counselor who helps students schedule classes and gives specialized advice for prosperous future career development.",
-    tools: [{ type: "code_interpreter" }],
+    tools: [{ type: "retrieval" }],
     file_ids: [file.id],
-    model: "gpt-4-1106-preview",
+    model: "gpt-3.5-turbo-1106",
   });
 
   return await openai.beta.threads.create();
