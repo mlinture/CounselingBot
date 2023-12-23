@@ -1,16 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import TextFormatter from './Textformat';
 
-import axios from 'axios';
 
 
 function TextInputPage() {
   const [text, setText] = useState('');
+  const [height, setHeight] = useState('auto');
+  const areaRef = useRef(null);
   const [aiResponse, setAiResponse] = useState('');
   const [loading, setIsLoading] = useState(false);
 
   const handleInputChange = (event) => {
     setText(event.target.value);
+    adjustHeight();
   };
+
+  const adjustHeight = () => {
+    if (areaRef.current) {
+      areaRef.current.style.height = 'auto';
+      areaRef.current.style.height = '${areaRef.current.scrollHeight}px';
+      console.log(areaRef.current.style.height);
+    }
+  }
+
+  useEffect(() => {
+    adjustHeight();
+  }, [text]);
 
   const handleEnter = async () => {
     //api call
@@ -34,7 +49,7 @@ function TextInputPage() {
         }
 
         const data = await response.json();
-        console.log(data);
+        console.log(data.toString());
         setAiResponse(data.message);
     } catch (error) {
         console.error('Error:', error);
@@ -44,14 +59,30 @@ function TextInputPage() {
     }
   }
 
+  const styling = {
+    width: '100%',
+    minHeight: '50px', // Minimum height
+    maxHeight: '300px', // Maximum height before scrolling
+    padding: '10px',
+    boxSizing: 'border-box',
+    overflowY: 'auto', // Allows scrolling
+    resize: 'none',
+    fontFamily: 'Calibri, sans-serif',
+    fontSize: '16px',
+    lineHeight: '1.5',
+    border: '1px solid #ccc',
+  };
+
 
   return (
     <div>
-      <input
+      <textarea
         type="text"
         value={text}
         onChange={handleInputChange}
+        style={styling}
         placeholder="Type something..."
+        ref={areaRef}
       />
       <p>You typed: {text}</p>
       <button
@@ -61,7 +92,7 @@ function TextInputPage() {
       >
         {loading ? 'Asking...' : 'Ask!!'}
       </button>
-      <p>{aiResponse}</p>
+      <TextFormatter text={aiResponse} />
     </div>
   );
 }
