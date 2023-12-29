@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import TextFormatter from './Textformat';
 import Dropdown from './Dropdown';
+import PdfButton from './PdfButton';
+import { fileFromPath } from 'openai';
 
 
 function TextInputPage() {
@@ -10,10 +12,12 @@ function TextInputPage() {
   const [aiResponse, setAiResponse] = useState('');
   const [loading, setIsLoading] = useState(false);
   const [selectedSchool, setSchool] = useState('');
+  const [transcript, setTranscript] = useState('');
 
   const SCHOOLS = [
     { name: 'UCI', url: 'https://catalogue.uci.edu/previouseditions/2013-14/pdf/2013-14.pdf' },
     { name: 'Purdue', url: 'https://catalog.purdue.edu/mime/media/16/11101/2023-2024+Courses.pdf'},
+    { name: 'Upload Personal Transcript', url: 'transcript_counselbot.pdf'},
   ];
 
   const handleInputChange = (event) => {
@@ -37,6 +41,10 @@ function TextInputPage() {
     setSchool(url);
   }
 
+  const handleTranscript = (file) => {
+    setTranscript(file);
+  }
+
   useEffect(() => {
     adjustHeight();
   }, [text]);
@@ -48,16 +56,19 @@ function TextInputPage() {
     }
 
     setIsLoading(true);
+
+    const form = new FormData();
+    form.append('prompt', text);
+    form.append('school', selectedSchool);
+
+    if (transcript) {
+      form.append('transcripts', transcript, transcript.name);
+    }
+
     try {
         const response = await fetch('/api/getAssistant', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ 
-              prompt: text,
-              school: selectedSchool
-            }),
+            body: form,
         });
 
         if (!response.ok) {
@@ -93,9 +104,15 @@ function TextInputPage() {
 
   return (
     <div>
+      <strong>
+        College Counseling Bot
+      </strong>
       <Dropdown 
         schools={SCHOOLS}
         onUrlSelect={handleUrlSelect}
+      />
+      <PdfButton
+        onFileProcess={handleTranscript}
       />
       <textarea
         type="text"
