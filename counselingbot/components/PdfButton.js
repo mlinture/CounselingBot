@@ -33,7 +33,7 @@ const PdfButton = ({ onFileProcess }) => {
                 accept=".pdf"
                 onChange={handleFileChange}
             />
-            <button onClick={handleClick}>Upload and Process PDF</button>
+            <button onClick={handleClick}>Upload Transcript (PDF)</button>
             {uploadStatus && <div>{uploadStatus}</div>}
         </div>
     );

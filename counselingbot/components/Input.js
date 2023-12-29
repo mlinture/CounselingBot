@@ -87,6 +87,7 @@ function TextInputPage() {
     }
   }
 
+  //Styling for the query text box
   const styling = {
     width: '100%',
     minHeight: '50px', // Minimum height
@@ -100,13 +101,21 @@ function TextInputPage() {
     lineHeight: '1.5',
     border: '1px solid #ccc',
   };
+  
+  //Styling for the title
+  const titleStyle = {
+    fontFamily: 'Calibri, sans-serif',
+    fontSize: '48px',
+  }
 
 
   return (
     <div>
-      <strong>
+      <strong
+        style={titleStyle}>
         College Counseling Bot
       </strong>
+      <br/>
       <Dropdown 
         schools={SCHOOLS}
         onUrlSelect={handleUrlSelect}

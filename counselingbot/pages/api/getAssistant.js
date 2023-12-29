@@ -22,6 +22,7 @@ const openai = new OpenAI({
 });
 let assistant;
 let thread;
+let added = false;
 
 const downloadFile = async (url, filepath) => {
   const writer = fs.createWriteStream(filepath);
@@ -39,7 +40,7 @@ const downloadFile = async (url, filepath) => {
   });
 };
 
-async function setEnv(schoolLink, transFile) {
+async function setEnv(schoolLink) {
   //This is the temporary path for locally uploaded transcript pdf
   //const tempTransPath = path.join(__dirname, transFile.originalname);
   //This is the temporary path for the corresponding school catalog pdf
@@ -50,26 +51,40 @@ async function setEnv(schoolLink, transFile) {
     file: fs.createReadStream(temp),
     purpose: "assistants",
   });
-  
-  const downTrans = await openai.files.create({
-    file: fs.createReadStream(transFile.path),
-    purpose: "assistants",
-  })
 
   fs.unlinkSync(temp);
-  fs.unlinkSync(transFile.path);
 
   assistant = await openai.beta.assistants.create({
     name: "Counseling Bot",
     instructions:
     "You are a college counselor who helps students schedule classes and gives specialized advice for prosperous future career development. Attached is a school catalog; parse through and find relevant information based on the query.",
     tools: [{ type: "retrieval" }],
-    file_ids: [file.id, downTrans.id],
+    file_ids: [file.id],
     model: "gpt-3.5-turbo-1106",
   });
 
   return await openai.beta.threads.create();
 };
+
+async function addFile(transFile) {
+
+  const downTrans = await openai.files.create({
+    file: fs.createReadStream(transFile.path),
+    purpose: "assistants",
+  })
+
+  fs.unlinkSync(transFile.path);
+
+  let existing = assistant.file_ids || [];
+
+  await openai.beta.assistants.update(assistant.id, {
+    file_ids: [...existing, downTrans.id],
+  });
+
+  added = true;
+  return;
+
+}
 
 app.post('/api/getAssistant', upload.single('transcripts'), async (req, res) => {
 
@@ -82,11 +97,16 @@ app.post('/api/getAssistant', upload.single('transcripts'), async (req, res) => 
       res.status(400).json({ message: 'No prompt was provided. Please try again.'});
       return;
     }
+
     if (thread === undefined) {
-      thread = await setEnv(school, transcripts);
+      thread = await setEnv(school);
     }
 
-    console.log(school);
+    if (transcripts && added == false) {
+      await addFile(transcripts);
+    }
+
+    //console.log(school);
     await openai.beta.threads.messages.create(thread.id, {
       role: "user",
       content: prompt,
