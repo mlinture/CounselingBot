@@ -17,7 +17,6 @@ function TextInputPage() {
   const SCHOOLS = [
     { name: 'UCI', url: 'https://catalogue.uci.edu/previouseditions/2013-14/pdf/2013-14.pdf' },
     { name: 'Purdue', url: 'https://catalog.purdue.edu/mime/media/16/11101/2023-2024+Courses.pdf'},
-    { name: 'Upload Personal Transcript', url: 'transcript_counselbot.pdf'},
   ];
 
   const handleInputChange = (event) => {
