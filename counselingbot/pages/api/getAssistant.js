@@ -15,7 +15,7 @@ export const config = {
 
 const app = express();
 
-const upload = multer({ destination: 'uploads/' });
+const upload = multer({ dest: 'uploads/' });
 
 const openai = new OpenAI({
   apiKey: OPENAI_API_KEY,
@@ -40,7 +40,8 @@ const downloadFile = async (url, filepath) => {
 };
 
 async function setEnv(schoolLink, transFile) {
-  //transFile.originalname is the temporary path for locally uploaded transcript pdf
+  //This is the temporary path for locally uploaded transcript pdf
+  //const tempTransPath = path.join(__dirname, transFile.originalname);
   //This is the temporary path for the corresponding school catalog pdf
   const temp = path.join(__dirname, 'temp.pdf');
   await downloadFile(schoolLink, temp);
@@ -51,12 +52,12 @@ async function setEnv(schoolLink, transFile) {
   });
   
   const downTrans = await openai.files.create({
-    file: fs.createReadStream(transFile.originalname),
+    file: fs.createReadStream(transFile.path),
     purpose: "assistants",
   })
 
   fs.unlinkSync(temp);
-  fs.unlinkSync(transFile.originalname);
+  fs.unlinkSync(transFile.path);
 
   assistant = await openai.beta.assistants.create({
     name: "Counseling Bot",
